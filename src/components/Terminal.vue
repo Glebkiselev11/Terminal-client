@@ -11,7 +11,7 @@
     </form>
 
     <!-- Тут выводим сообщения об ошибке -->
-    <small v-show="error" style="color: red;">{{error}}</small>
+    <span v-show="error" class="error">{{error}}</span>
 
     <!-- Сюда отображается информация полученная с бэкенда -->
     <div class="info-wrap" v-if="productName">
@@ -53,22 +53,29 @@ export default {
             // Тут если сервер ответил удачно и вернул какие то данные, то выполняем этот блок кода
             if (req.status == 200) {
               this.error = ''       
-              console.log(req)
               // Деструктурируем приходящие данные, а именно вытаскиваем data (именно там хранится нужная нам инфа)
               let {data} = JSON.parse(req.responseText)
-
-              // А здесь просто раскидываем по переменным нужные нам данные (data[0] - потому что изначально это все типо массив с одним элементом)
-              this.productName = data[0].product_name
+              // Проверяем нашел ли он что-то по такому штрих коду
+              if (data[0]) {
+                // Если нашел, то присваиваем это значение в productName
+                this.productName = data[0].product_name
+              } else {
+                // А если не нашел, то на всякий случай очищаем productName
+                this.productName = ''
+                // И выводим ошибку
+                this.error = 'Такого товара не найдено'
+              }
 
 
             } else {
-              this.error = 'Ошибка: сервер не отвечает'
+              this.error = 'Сервер не отвечает'
             }
           }
         }     
       } else {
         // Если пользователь ввел меньше или больше цифр, то выведем ему ошибку
-        this.error = 'Ошибка: штрих код должен содержать 13 цифр'
+        this.error = 'Штрих код должен содержать 13 цифр'
+        this.productName = ''
       }
       
     }
@@ -99,6 +106,7 @@ export default {
 
 .form-wrap button {
   cursor: pointer;
+  font-size: 18px;
   width: 100%;
 }
 
@@ -106,7 +114,14 @@ export default {
   max-width: 300px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 2px dotted black;
+  border-top: 2px dotted green;
+}
+
+.error {
+  color: red;
+  display: block;
+  margin-top: 10px;
+  max-width: 300px;
 }
 
 </style>
